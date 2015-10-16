@@ -300,9 +300,59 @@ def foodLogicPlan(problem):
     """
     walls = problem.walls
     width, height = problem.getWidth(), problem.getHeight()
-
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    position, food = problem.getStartState()
+    init_x, init_y = position
+    MAX_T = 51
+    
+    #Pacman must start at the initial position
+    init_state_expr = PropSymbolExpr(pacman_str, init_x, init_y, 0)
+    
+    #Pacman can't be at multiple positions at once
+    init_positions = []
+    for x in range(1, width + 1):
+        for y in range(1, height + 1):
+            init_positions.append(PropSymbolExpr(pacman_str, x, y, 0))
+            
+    pos_exclusion_expr = exactlyOne(init_positions)
+    
+    total_expr = [init_state_expr, pos_exclusion_expr]
+    
+    for t in range(1, MAX_T):
+        #Pacman needs to have eaten each food
+        food_expr = []
+        for x in range(food.width):
+            for y in range(food.height):
+                if food[x][y]:
+                    food_eaten = []
+                    for t2 in range(t+1):
+                        food_eaten.append(PropSymbolExpr(pacman_str, x, y, t2))
+                    food_expr.append(atLeastOne(food_eaten))
+                    
+        #Pacman can't make more than one move per step
+        possible_actions = [PropSymbolExpr("North", t-1), PropSymbolExpr("South", t-1), PropSymbolExpr("East", t-1), PropSymbolExpr("West", t-1)]
+        action_exclusion_expr = exactlyOne(possible_actions) 
+        
+        #Each position has a corresponding successor
+        successors = []
+        for x in range(1, width + 1):
+            for y in range(1, height + 1):
+                successor = pacmanSuccessorStateAxioms(x, y, t, walls)
+                if successor != False:
+                    successors.append(successor)
+        
+        successor_expr = logic.conjoin(successors)
+        
+        
+        total_expr += [action_exclusion_expr, successor_expr]
+        model_expr = logic.conjoin(total_expr + food_expr)
+        model = findModel(model_expr)
+        
+        if model != False:
+            path =  extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH,
+                            game.Directions.EAST, game.Directions.WEST])
+            return path
+            
+    return False
 
 def ghostPositionSuccessorStateAxioms(x, y, t, ghost_num, walls_grid):
     """
@@ -312,9 +362,20 @@ def ghostPositionSuccessorStateAxioms(x, y, t, ghost_num, walls_grid):
     """
     pos_str = ghost_pos_str+str(ghost_num)
     east_str = ghost_east_str+str(ghost_num)
-
-    "*** YOUR CODE HERE ***"
-    return logic.Expr('A') # Replace this with your expression
+    
+    
+    expr_list = []
+    if not walls_grid[x+1][y]:
+        expr_list.append(PropSymbolExpr(pos_str, x + 1, y, t-1) & ~PropSymbolExpr(east_str, t-1))
+        
+    if not walls_grid[x-1][y]:
+        expr_list.append(PropSymbolExpr(pos_str, x - 1, y, t-1) & PropSymbolExpr(east_str, t-1))
+        
+    if expr_list == []:
+        return False
+        
+    pos_current = PropSymbolExpr(pos_str, x, y, t)     
+    return pos_current % logic.disjoin(expr_list)
 
 def ghostDirectionSuccessorStateAxioms(t, ghost_num, blocked_west_positions, blocked_east_positions):
     """
