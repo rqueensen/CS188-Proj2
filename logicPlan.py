@@ -442,6 +442,19 @@ def foodGhostLogicPlan(problem):
     walls = problem.walls
     width, height = problem.getWidth(), problem.getHeight()
 
+    #Pacman must start at the initial position
+    init_state_expr = PropSymbolExpr(pacman_str, init_x, init_y, 0)
+    
+    #Pacman can't be at multiple positions at once
+    init_positions = []
+    for x in range(1, width + 1):
+        for y in range(1, height + 1):
+            init_positions.append(PropSymbolExpr(pacman_str, x, y, 0))
+            
+    pos_exclusion_expr = exactlyOne(init_positions)
+    
+    
+    
     
     
     total_expr += [action_exclusion_expr, successor_expr]
