@@ -478,10 +478,13 @@ def foodGhostLogicPlan(problem):
     pos_exclusion_expr = exactlyOne(init_positions)
     total_expr.append(pos_exclusion_expr)
     
-    print("total_expr= " + str(total_expr))
+    #print("total_expr= " + str(total_expr))
     # find the blocked_**st_positions lists 
     blocked_west_positions, blocked_east_positions = getBlockedPositions(problem)
     
+    #for eastblocker in blocked_east_positions:
+        #for g_id in range(len(problem.getGhostStartStates())):
+            
     for t in range(1, MAX_T):
         #Pacman needs to have eaten each food
         food_expr = []
@@ -522,11 +525,11 @@ def foodGhostLogicPlan(problem):
         successor_expr = logic.conjoin(successors)
     
         total_expr += [action_exclusion_expr, successor_expr]
-        print("total_expr= " + str(total_expr))    
+        #print("total_expr= " + str(total_expr))    
         model_expr = logic.conjoin(total_expr + food_expr)
-        print("model_expr= " + str(model_expr))    
+        #print("model_expr= " + str(model_expr))    
         model = findModel(model_expr)
-        print("MODEL " + str(model))
+        #print("MODEL " + str(model))
         if model != False:
             path =  extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH,
                                 game.Directions.EAST, game.Directions.WEST])
