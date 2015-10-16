@@ -425,11 +425,16 @@ def pacmanAliveSuccessorStateAxioms(x, y, t, num_ghosts):
     expr_list = []
     
     for ghost in ghost_strs:
+        # ghost can't be where pacman is
         expr_list.append(PropSymbolExpr(ghost, x, y, t))
+        # ghost can't be where pacman was
         expr_list.append(PropSymbolExpr(ghost, x, y, t-1))
         
+    #relate pacman position to ghost position
     disj_expr_list =  PropSymbolExpr(pacman_str, x, y, t) >> ~logic.disjoin(expr_list)
+    #goal
     alive_current = PropSymbolExpr(pacman_alive_str, t)
+    #return, and require that pacman was alive at t-1
     return alive_current % (PropSymbolExpr(pacman_alive_str, t-1) & disj_expr_list)
 
 def foodGhostLogicPlan(problem):
