@@ -522,16 +522,16 @@ def foodGhostLogicPlan(problem):
             
         successor_expr = logic.conjoin(successors)
     
-    total_expr += [action_exclusion_expr, successor_expr]
-    print("total_expr= " + str(total_expr))    
-    model_expr = logic.conjoin(total_expr + food_expr)
-    print("model_expr= " + str(model_expr))    
-    model = findModel(model_expr)
-    
-    if model != False:
-        path =  extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH,
-                            game.Directions.EAST, game.Directions.WEST])
-        return path 
+        total_expr += [action_exclusion_expr, successor_expr]
+        print("total_expr= " + str(total_expr))    
+        model_expr = logic.conjoin(total_expr + food_expr)
+        print("model_expr= " + str(model_expr))    
+        model = findModel(model_expr)
+        
+        if model != False:
+            path =  extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH,
+                                game.Directions.EAST, game.Directions.WEST])
+            return path 
 
 
 def getBlockedPositions(problem):
