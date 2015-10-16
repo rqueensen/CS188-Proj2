@@ -467,12 +467,14 @@ def foodGhostLogicPlan(problem):
         for y in range(1, height + 1):
             init_positions.append(PropSymbolExpr(pacman_str, x, y, 0))
             for g_id in range(len(problem.getGhostStartStates())):
+                ghost_positions = []
                 ghost_id = ghost_pos_str+str(g_id)
-                init_positions.append(PropSymbolExpr(ghost_id, x, y, 0))
+                ghost_positions.append(PropSymbolExpr(ghost_id, x, y, 0))
             
+    for ghostpos in init_ghost_positions:
+        total_expr.append(exactlyOne(ghostpos))
     pos_exclusion_expr = exactlyOne(init_positions)
-    ghost_exclusion_expr = exactlyOne(init_ghost_positions)
-    total_expr.append(pos_exclusion_expr & ghost_exclusion_expr)
+    total_expr.append(pos_exclusion_expr)
     
     print("total_expr= " + str(total_expr))
     # find the blocked_**st_positions lists 
