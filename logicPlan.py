@@ -371,9 +371,13 @@ def ghostPositionSuccessorStateAxioms(x, y, t, ghost_num, walls_grid):
     if not walls_grid[x-1][y]:
         expr_list.append(PropSymbolExpr(pos_str, x - 1, y, t-1) & PropSymbolExpr(east_str, t-1))
         
-    if expr_list == []:
+    if walls_grid[x-1][y] and walls_grid[x+1][y]:
+        expr_list.append(PropSymbolExpr(pos_str, x, y, t - 1))
+        
+    if walls_grid[x][y]:
         return False
         
+    print ("pos " + str(expr_list))
     pos_current = PropSymbolExpr(pos_str, x, y, t)     
     return pos_current % logic.disjoin(expr_list)
 
@@ -383,11 +387,32 @@ def ghostDirectionSuccessorStateAxioms(t, ghost_num, blocked_west_positions, blo
     west or east walls.
     Current <==> (causes to stay) | (causes of current)
     """
+    print ("t: " + str(t) + ", ghost num: " + str(ghost_num))
     pos_str = ghost_pos_str+str(ghost_num)
     east_str = ghost_east_str+str(ghost_num)
 
-    "*** YOUR CODE HERE ***"
-    return logic.Expr('A') # Replace this with your expression
+    expr_list = []
+    
+    for wposition in blocked_west_positions:
+        # Ghost is going east if he was next to a westwall at t-1 and he was going west
+        # Ghost is going east if he was not next to an eastwall and already going east
+
+        # Ghost is going west if he was next to an eastwall at t-1 and he was going east
+        # Ghost is going west if he was not next to a westwall and already going west
+        expr_list.append(~PropSymbolExpr(east_str, t-1) & PropSymbolExpr(pos_str, wposition[0], wposition[1], t))
+        #expr_list.append((PropSymbolExpr(pos_str, eposition[0], eposition[1], t-1) & PropSymbolExpr(east_str, t-1)) | (~PropSymbolExpr(pos_str, wposition[0], wposition[1], t-1) & ~PropSymbolExpr(east_str, t-1)))
+    for eposition in blocked_east_positions:    
+        #if eposition in blocked_west_positions:
+            #expr_list.append(PropSymbolExpr(east_str
+        expr_list.append(PropSymbolExpr(east_str, t-1) & ~PropSymbolExpr(pos_str, eposition[0], eposition[1], t))
+        
+    #if expr_list == []:
+        #return False
+    #return False
+    print expr_list
+    dir_current = PropSymbolExpr(east_str, t)
+    print ("dir_current " + str(dir_current))
+    return dir_current % logic.disjoin(expr_list)
 
 
 def pacmanAliveSuccessorStateAxioms(x, y, t, num_ghosts):
@@ -397,8 +422,16 @@ def pacmanAliveSuccessorStateAxioms(x, y, t, num_ghosts):
     """
     ghost_strs = [ghost_pos_str+str(ghost_num) for ghost_num in xrange(num_ghosts)]
 
-    "*** YOUR CODE HERE ***"
-    return logic.Expr('A') # Replace this with your expression
+    expr_list = []
+    
+    for ghost in ghost_strs:
+        expr_list.append(PropSymbolExpr(pacman_str, x, y, t) >> ~PropSymbolExpr(ghost, x, y, t))
+        expr_list.append(PropSymbolExpr(pacman_str, x, y, t) >> ~PropSymbolExpr(ghost, x, y, t-1))
+        
+    alive_current = PropSymbolExpr(pacman_alive_str, t)
+    if t == 0:
+        return alive_current % logic.disjoin(expr_list)
+    return alive_current % (PropSymbolExpr(pacman_alive_str, t-1) & logic.disjoin(expr_list))
 
 def foodGhostLogicPlan(problem):
     """
