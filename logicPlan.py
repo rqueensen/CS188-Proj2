@@ -396,7 +396,7 @@ def ghostDirectionSuccessorStateAxioms(t, ghost_num, blocked_west_positions, blo
     for wposition in blocked_west_positions:
         # Ghost is going east if he was next to a westwall at t-1 and he was going west
         # Ghost is going east if he was not next to an eastwall and already going east
-        wexpr_list.append(PropSymbolExpr(pos_str, wposition[0], wposition[1], t))
+        wexpr_list.append(~PropSymbolExpr(pos_str, wposition[0], wposition[1], t))
         
     for eposition in blocked_east_positions:    
         # Ghost is going west if he was next to an eastwall at t-1 and he was going east
@@ -409,8 +409,8 @@ def ghostDirectionSuccessorStateAxioms(t, ghost_num, blocked_west_positions, blo
     wexpr_list = logic.conjoin(wexpr_list)
     eexpr_list = logic.conjoin(eexpr_list)
     return dir_current % ((dir_past & eexpr_list) 
-                            | (eexpr_list & wexpr_list) 
-                            | (wexpr_list & ~eexpr_list & ~dir_past))
+                            | (eexpr_list & ~wexpr_list) 
+                            | (~wexpr_list & ~eexpr_list & ~dir_past))
 
 
 def pacmanAliveSuccessorStateAxioms(x, y, t, num_ghosts):
