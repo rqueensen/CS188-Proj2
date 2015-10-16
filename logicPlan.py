@@ -452,14 +452,13 @@ def foodGhostLogicPlan(problem):
     MAX_T = 51
 
     #Pacman must start at the initial position
-    total_expr_begin = [PropSymbolExpr(pacman_str, init_x, init_y, 0)]
+    total_expr = [PropSymbolExpr(pacman_str, init_x, init_y, 0)]
     #ghosts must start at proper positions
     for g_id in range(len(problem.getGhostStartStates())):
         ghost_id = ghost_pos_str+str(g_id)
-        total_expr_begin.append(PropSymbolExpr(ghost_id, problem.getGhostStartStates()[g_id].getPosition()[0], problem.getGhostStartStates()[g_id].getPosition()[1], 0))
+        total_expr.append(PropSymbolExpr(ghost_id, problem.getGhostStartStates()[g_id].getPosition()[0], problem.getGhostStartStates()[g_id].getPosition()[1], 0))
     
-    print("total_expr_begin= " + str(total_expr_begin))
-    total_expr = [logic.conjoin(total_expr_begin)]
+    #rint("total_expr_begin= " + str(total_expr_begin))
     #Pacman can't be at multiple positions at once
     #Ghosts start off at their specified spots
     init_positions = []
@@ -504,12 +503,18 @@ def foodGhostLogicPlan(problem):
                     successors.append(successor)
                 if not walls[x][y]:
                     for g_id in range(len(problem.getGhostStartStates())):
-                        successors.append(ghostPositionSuccessorStateAxioms(x, y, t, g_id, walls))
-                        successors.append(pacmanAliveSuccessorStateAxioms(x, y, t, len(problem.getGhostStartStates())))
+                        posSuccessor = ghostPositionSuccessorStateAxioms(x, y, t, g_id, walls)
+                        if posSuccessor != False:
+                            successors.append(posSuccessor)
+                        aliveSuccessor = pacmanAliveSuccessorStateAxioms(x, y, t, len(problem.getGhostStartStates()))
+                        if aliveSuccessor != False:
+                            successors.append(aliveSuccessor)
                         
         # Use Direction Axiom
         for g_id in range(len(problem.getGhostStartStates())):
-            successors.append(ghostDirectionSuccessorStateAxioms(t, g_id, blocked_west_positions, blocked_east_positions))
+            dirSuccessor = ghostDirectionSuccessorStateAxioms(t, g_id, blocked_west_positions, blocked_east_positions)
+            if dirSuccessor != False:
+                successors.append(dirSuccessor)
             
         successor_expr = logic.conjoin(successors)
     
