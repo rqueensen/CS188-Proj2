@@ -363,7 +363,6 @@ def ghostPositionSuccessorStateAxioms(x, y, t, ghost_num, walls_grid):
     pos_str = ghost_pos_str+str(ghost_num)
     east_str = ghost_east_str+str(ghost_num)
     
-    
     expr_list = []
     if not walls_grid[x+1][y]:
         expr_list.append(PropSymbolExpr(pos_str, x + 1, y, t-1) & ~PropSymbolExpr(east_str, t-1))
@@ -374,10 +373,6 @@ def ghostPositionSuccessorStateAxioms(x, y, t, ghost_num, walls_grid):
     if walls_grid[x-1][y] and walls_grid[x+1][y]:
         expr_list.append(PropSymbolExpr(pos_str, x, y, t - 1))
         
-    if walls_grid[x][y]:
-        return False
-        
-    print ("pos " + str(expr_list))
     pos_current = PropSymbolExpr(pos_str, x, y, t)     
     return pos_current % logic.disjoin(expr_list)
 
