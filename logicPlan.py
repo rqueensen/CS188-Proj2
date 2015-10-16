@@ -425,13 +425,11 @@ def pacmanAliveSuccessorStateAxioms(x, y, t, num_ghosts):
     expr_list = []
     
     for ghost in ghost_strs:
-        expr_list.append(~PropSymbolExpr(ghost, x, y, t))
-        expr_list.append(~PropSymbolExpr(ghost, x, y, t-1))
+        expr_list.append(PropSymbolExpr(ghost, x, y, t))
+        expr_list.append(PropSymbolExpr(ghost, x, y, t-1))
         
+    disj_expr_list =  PropSymbolExpr(pacman_str, x, y, t) >> ~logic.disjoin(expr_list)
     alive_current = PropSymbolExpr(pacman_alive_str, t)
-    disj_expr_list =  PropSymbolExpr(pacman_str, x, y, t) >> logic.disjoin(expr_list)
-    if t == 0:
-        return alive_current % disj_expr_list
     return alive_current % (PropSymbolExpr(pacman_alive_str, t-1) & disj_expr_list)
 
 def foodGhostLogicPlan(problem):
