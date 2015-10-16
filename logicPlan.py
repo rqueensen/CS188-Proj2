@@ -306,14 +306,16 @@ def foodLogicPlan(problem):
     
     #Pacman must start at the initial position
     init_state_expr = PropSymbolExpr(pacman_str, init_x, init_y, 0)
-    
+    print("init_state_expr= " + str(init_state_expr))
     #Pacman can't be at multiple positions at once
     init_positions = []
     for x in range(1, width + 1):
         for y in range(1, height + 1):
             init_positions.append(PropSymbolExpr(pacman_str, x, y, 0))
             
+    print("init_positions= " + str(init_positions))
     pos_exclusion_expr = exactlyOne(init_positions)
+    print("pos_exclusion_expr= " + str(pos_exclusion_expr))
     
     total_expr = [init_state_expr, pos_exclusion_expr]
     
@@ -328,10 +330,12 @@ def foodLogicPlan(problem):
                         food_eaten.append(PropSymbolExpr(pacman_str, x, y, t2))
                     food_expr.append(atLeastOne(food_eaten))
                     
+        print("food_expr= " + str(food_expr))
         #Pacman can't make more than one move per step
         possible_actions = [PropSymbolExpr("North", t-1), PropSymbolExpr("South", t-1), PropSymbolExpr("East", t-1), PropSymbolExpr("West", t-1)]
         action_exclusion_expr = exactlyOne(possible_actions) 
         
+        print("action_exclusion_expr= " + str(action_exclusion_expr))
         #Each position has a corresponding successor
         successors = []
         for x in range(1, width + 1):
@@ -339,12 +343,14 @@ def foodLogicPlan(problem):
                 successor = pacmanSuccessorStateAxioms(x, y, t, walls)
                 if successor != False:
                     successors.append(successor)
-        
+        print("successors " + str(successors))
         successor_expr = logic.conjoin(successors)
         
-        
+        print("successor_expr " + str(successor_expr))
         total_expr += [action_exclusion_expr, successor_expr]
+        print("total_expr " + str(total_expr))
         model_expr = logic.conjoin(total_expr + food_expr)
+        print("model_expr " + str(model_expr))        
         model = findModel(model_expr)
         
         if model != False:
@@ -446,14 +452,14 @@ def foodGhostLogicPlan(problem):
     MAX_T = 51
 
     #Pacman must start at the initial position
-    init_state_expr = PropSymbolExpr(pacman_str, init_x, init_y, 0)
+    total_expr_begin = [PropSymbolExpr(pacman_str, init_x, init_y, 0)]
     #ghosts must start at proper positions
-    ghost_init = []
     for g_id in range(len(problem.getGhostStartStates())):
         ghost_id = ghost_pos_str+str(g_id)
-        ghost_init.append(propSymbolExpr(gs, problem.getGhostStartStates()[g_id].getPosition()[0], problem.getGhostStartStates()[g_id].getPosition()[1], 0)
-    ghost_init.append(init_state_expr)
+        total_expr_begin.append(PropSymbolExpr(ghost_id, problem.getGhostStartStates()[g_id].getPosition()[0], problem.getGhostStartStates()[g_id].getPosition()[1], 0))
     
+    print("total_expr_begin= " + str(total_expr_begin))
+    total_expr = [logic.conjoin(total_expr_begin)]
     #Pacman can't be at multiple positions at once
     #Ghosts start off at their specified spots
     init_positions = []
@@ -467,9 +473,9 @@ def foodGhostLogicPlan(problem):
             
     pos_exclusion_expr = exactlyOne(init_positions)
     ghost_exclusion_expr = exactlyOne(init_ghost_positions)
+    total_expr.append(pos_exclusion_expr & ghost_exclusion_expr)
     
-    total_expr = ghost_init.append(pos_exclusion_expr.append(ghost_exclusion_expr))
-    
+    print("total_expr= " + str(total_expr))
     # find the blocked_**st_positions lists 
     blocked_west_positions, blocked_east_positions = getBlockedPositions(problem)
     
@@ -483,15 +489,6 @@ def foodGhostLogicPlan(problem):
                     for t2 in range(t+1):
                         food_eaten.append(PropSymbolExpr(pacman_str, x, y, t2))
                     food_expr.append(atLeastOne(food_eaten))
-                    
-
-        axioms_conditions = []
-        for x in range(width):
-            for y in range(height):
-                if not walls[x][y]:
-                    for g_id in range(len(problem.getGhostStartStates())):
-                        axioms_conditions.append(ghostPositionSuccessorStateAxioms(x, y, t, g_id, walls)
-                        axioms_conditions.append(pacmanSuccessorStateAxioms(i
                     
         #Pacman can't make more than one move per step
         possible_actions = [PropSymbolExpr("North", t-1), PropSymbolExpr("South", t-1), PropSymbolExpr("East", t-1), PropSymbolExpr("West", t-1)]
@@ -507,7 +504,7 @@ def foodGhostLogicPlan(problem):
                     successors.append(successor)
                 if not walls[x][y]:
                     for g_id in range(len(problem.getGhostStartStates())):
-                        successors.append(ghostPositionSuccessorStateAxioms(x, y, t, g_id, walls)
+                        successors.append(ghostPositionSuccessorStateAxioms(x, y, t, g_id, walls))
                         successors.append(pacmanAliveSuccessorStateAxioms(x, y, t, len(problem.getGhostStartStates())))
                         
         # Use Direction Axiom
@@ -517,8 +514,10 @@ def foodGhostLogicPlan(problem):
         successor_expr = logic.conjoin(successors)
     
     total_expr += [action_exclusion_expr, successor_expr]
-        model_expr = logic.conjoin(total_expr + food_expr)
-        model = findModel(model_expr)
+    print("total_expr= " + str(total_expr))    
+    model_expr = logic.conjoin(total_expr + food_expr)
+    print("model_expr= " + str(model_expr))    
+    model = findModel(model_expr)
     
     if model != False:
         path =  extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH,
@@ -529,7 +528,8 @@ def foodGhostLogicPlan(problem):
 def getBlockedPositions(problem):
     walls = problem.walls
     width, height = problem.getWidth(), problem.getHeight()
-    west, east = []
+    west = []
+    east = []
     for i in range(width):
         for j in range(height):
             if walls[i][j+1]:
