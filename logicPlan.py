@@ -481,11 +481,8 @@ def foodGhostLogicPlan(problem):
     #print("total_expr= " + str(total_expr))
     # find the blocked_**st_positions lists 
     blocked_west_positions, blocked_east_positions = getBlockedPositions(problem)
-    
-    #for eastblocker in blocked_east_positions:
-        #for g_id in range(len(problem.getGhostStartStates())):
             
-    for t in range(1, MAX_T):
+    for t in range(0, MAX_T):
         #Pacman needs to have eaten each food
         food_expr = []
         for x in range(food.width):
@@ -497,25 +494,37 @@ def foodGhostLogicPlan(problem):
                     food_expr.append(atLeastOne(food_eaten))
                     
         #Pacman can't make more than one move per step
-        possible_actions = [PropSymbolExpr("North", t-1), PropSymbolExpr("South", t-1), PropSymbolExpr("East", t-1), PropSymbolExpr("West", t-1)]
-        action_exclusion_expr = exactlyOne(possible_actions) 
+        if t > 0:
+            possible_actions = [PropSymbolExpr("North", t-1), PropSymbolExpr("South", t-1), PropSymbolExpr("East", t-1), PropSymbolExpr("West", t-1)]
+            action_exclusion_expr = exactlyOne(possible_actions) 
         
         #Each position has a corresponding successor
         # use all our axioms #wall-e
         successors = []
         for x in range(1, width + 1):
             for y in range(1, height + 1):
-                successor = pacmanSuccessorStateAxioms(x, y, t, walls)
-                if successor != False:
-                    successors.append(successor)
-                for g_id in range(len(problem.getGhostStartStates())):
-                    posSuccessor = ghostPositionSuccessorStateAxioms(x, y, t, g_id, walls)
-                    if posSuccessor != False:
-                        successors.append(posSuccessor)
-                aliveSuccessor = pacmanAliveSuccessorStateAxioms(x, y, t, len(problem.getGhostStartStates()))
-                if aliveSuccessor != False:
-                    successors.append(aliveSuccessor)
+                if t > 0:
+                    successor = pacmanSuccessorStateAxioms(x, y, t, walls)
+                    if successor != False:
+                        successors.append(successor)
+                    for g_id in range(len(problem.getGhostStartStates())):
+                        posSuccessor = ghostPositionSuccessorStateAxioms(x, y, t, g_id, walls)
+                        if posSuccessor != False:
+                            successors.append(posSuccessor)
+                    aliveSuccessor = pacmanAliveSuccessorStateAxioms(x, y, t, len(problem.getGhostStartStates()))
+                    if aliveSuccessor != False:
+                        successors.append(aliveSuccessor)
+                    
+            
+        for eastblocker in blocked_east_positions:
+            for g_id in range(len(problem.getGhostStartStates())):
+                if problem.getGhostStartStates()[g_id].getPosition() == eastblocker:
+                    ghost_id = ghost_east_str+str(g_id)
+                    successors.append(~PropSymbolExpr(ghost_id, 0))
+                    
                         
+        successors.append(PropSymbolExpr(pacman_alive_str, t))
+        successors.append(PropSymbolExpr(pacman_alive_str, 0))
         # Use Direction Axiom
         for g_id in range(len(problem.getGhostStartStates())):
             dirSuccessor = ghostDirectionSuccessorStateAxioms(t, g_id, blocked_west_positions, blocked_east_positions)
@@ -524,7 +533,10 @@ def foodGhostLogicPlan(problem):
             
         successor_expr = logic.conjoin(successors)
     
-        total_expr += [action_exclusion_expr, successor_expr]
+        if t > 0:
+            total_expr += [action_exclusion_expr, successor_expr]
+        else:
+            total_expr += [successor_expr]
         #print("total_expr= " + str(total_expr))    
         model_expr = logic.conjoin(total_expr + food_expr)
         #print("model_expr= " + str(model_expr))    
@@ -541,12 +553,12 @@ def getBlockedPositions(problem):
     width, height = problem.getWidth(), problem.getHeight()
     west = []
     east = []
-    for i in range(width):
-        for j in range(height):
-            if walls[i][j+1]:
-                west.append((i+1, j+1))
-            if walls[i+2][j+1]:
-                east.append((i+1, j+1))
+    for i in xrange(1, width+1):
+        for j in xrange(1, height+1):
+            if walls[i-1][j]:
+                west += [(i, j)]
+            if walls[i+1][j]:
+                east += [(i, j)]
     return west, east
     
 # Abbreviations
