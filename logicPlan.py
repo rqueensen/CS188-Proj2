@@ -410,7 +410,7 @@ def ghostDirectionSuccessorStateAxioms(t, ghost_num, blocked_west_positions, blo
     wexpr_list = ~logic.conjoin(wexpr_list)
     eexpr_list = logic.conjoin(eexpr_list)
     if t == 0:
-        return eexpr_list
+        return eexpr_list % dir_current
     return dir_current % ((dir_past & eexpr_list) 
                             | (eexpr_list & wexpr_list) 
                             | (wexpr_list & ~eexpr_list & ~dir_past))
