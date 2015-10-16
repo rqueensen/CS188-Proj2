@@ -505,14 +505,13 @@ def foodGhostLogicPlan(problem):
                 successor = pacmanSuccessorStateAxioms(x, y, t, walls)
                 if successor != False:
                     successors.append(successor)
-                if not walls[x][y]:
-                    for g_id in range(len(problem.getGhostStartStates())):
-                        posSuccessor = ghostPositionSuccessorStateAxioms(x, y, t, g_id, walls)
-                        if posSuccessor != False:
-                            successors.append(posSuccessor)
-                        aliveSuccessor = pacmanAliveSuccessorStateAxioms(x, y, t, len(problem.getGhostStartStates()))
-                        if aliveSuccessor != False:
-                            successors.append(aliveSuccessor)
+                for g_id in range(len(problem.getGhostStartStates())):
+                    posSuccessor = ghostPositionSuccessorStateAxioms(x, y, t, g_id, walls)
+                    if posSuccessor != False:
+                        successors.append(posSuccessor)
+                aliveSuccessor = pacmanAliveSuccessorStateAxioms(x, y, t, len(problem.getGhostStartStates()))
+                if aliveSuccessor != False:
+                    successors.append(aliveSuccessor)
                         
         # Use Direction Axiom
         for g_id in range(len(problem.getGhostStartStates())):
@@ -527,7 +526,7 @@ def foodGhostLogicPlan(problem):
         model_expr = logic.conjoin(total_expr + food_expr)
         print("model_expr= " + str(model_expr))    
         model = findModel(model_expr)
-        
+        print("MODEL " + str(model))
         if model != False:
             path =  extractActionSequence(model, [game.Directions.NORTH, game.Directions.SOUTH,
                                 game.Directions.EAST, game.Directions.WEST])
