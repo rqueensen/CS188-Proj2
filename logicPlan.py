@@ -462,17 +462,19 @@ def foodGhostLogicPlan(problem):
     #Pacman can't be at multiple positions at once
     #Ghosts start off at their specified spots
     init_positions = []
-    init_ghost_positions = []
+    init_ghost_positions = {}
+    for g_id in range(len(problem.getGhostStartStates())):
+                init_ghost_positions[g_id] = []
     for x in range(1, width + 1):
         for y in range(1, height + 1):
             init_positions.append(PropSymbolExpr(pacman_str, x, y, 0))
             for g_id in range(len(problem.getGhostStartStates())):
-                ghost_positions = []
                 ghost_id = ghost_pos_str+str(g_id)
-                ghost_positions.append(PropSymbolExpr(ghost_id, x, y, 0))
+                init_ghost_positions[g_id].append(PropSymbolExpr(ghost_id, x, y, 0))
+
             
-    for ghostpos in init_ghost_positions:
-        total_expr.append(exactlyOne(ghostpos))
+    for ghostpos in init_ghost_positions.keys():
+        total_expr.append(exactlyOne(init_ghost_positions[ghostpos]))
     pos_exclusion_expr = exactlyOne(init_positions)
     total_expr.append(pos_exclusion_expr)
     
