@@ -306,16 +306,16 @@ def foodLogicPlan(problem):
     
     #Pacman must start at the initial position
     init_state_expr = PropSymbolExpr(pacman_str, init_x, init_y, 0)
-    print("init_state_expr= " + str(init_state_expr))
+    #print("init_state_expr= " + str(init_state_expr))
     #Pacman can't be at multiple positions at once
     init_positions = []
     for x in range(1, width + 1):
         for y in range(1, height + 1):
             init_positions.append(PropSymbolExpr(pacman_str, x, y, 0))
             
-    print("init_positions= " + str(init_positions))
+    #print("init_positions= " + str(init_positions))
     pos_exclusion_expr = exactlyOne(init_positions)
-    print("pos_exclusion_expr= " + str(pos_exclusion_expr))
+    #print("pos_exclusion_expr= " + str(pos_exclusion_expr))
     
     total_expr = [init_state_expr, pos_exclusion_expr]
     
@@ -330,12 +330,12 @@ def foodLogicPlan(problem):
                         food_eaten.append(PropSymbolExpr(pacman_str, x, y, t2))
                     food_expr.append(atLeastOne(food_eaten))
                     
-        print("food_expr= " + str(food_expr))
+        #print("food_expr= " + str(food_expr))
         #Pacman can't make more than one move per step
         possible_actions = [PropSymbolExpr("North", t-1), PropSymbolExpr("South", t-1), PropSymbolExpr("East", t-1), PropSymbolExpr("West", t-1)]
         action_exclusion_expr = exactlyOne(possible_actions) 
         
-        print("action_exclusion_expr= " + str(action_exclusion_expr))
+        #print("action_exclusion_expr= " + str(action_exclusion_expr))
         #Each position has a corresponding successor
         successors = []
         for x in range(1, width + 1):
@@ -343,14 +343,14 @@ def foodLogicPlan(problem):
                 successor = pacmanSuccessorStateAxioms(x, y, t, walls)
                 if successor != False:
                     successors.append(successor)
-        print("successors " + str(successors))
+        #print("successors " + str(successors))
         successor_expr = logic.conjoin(successors)
         
-        print("successor_expr " + str(successor_expr))
+        #print("successor_expr " + str(successor_expr))
         total_expr += [action_exclusion_expr, successor_expr]
-        print("total_expr " + str(total_expr))
+        #print("total_expr " + str(total_expr))
         model_expr = logic.conjoin(total_expr + food_expr)
-        print("model_expr " + str(model_expr))        
+        #print("model_expr " + str(model_expr))        
         model = findModel(model_expr)
         
         if model != False:
@@ -410,7 +410,7 @@ def ghostDirectionSuccessorStateAxioms(t, ghost_num, blocked_west_positions, blo
     wexpr_list = ~logic.conjoin(wexpr_list)
     eexpr_list = logic.conjoin(eexpr_list)
     if t == 0:
-        return eexpr_list % dir_current
+        return eexpr_list
     return dir_current % ((dir_past & eexpr_list) 
                             | (eexpr_list & wexpr_list) 
                             | (wexpr_list & ~eexpr_list & ~dir_past))
