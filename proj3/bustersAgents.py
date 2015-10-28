@@ -140,4 +140,36 @@ class GreedyBustersAgent(BustersAgent):
         livingGhostPositionDistributions = \
             [beliefs for i, beliefs in enumerate(self.ghostBeliefs)
              if livingGhosts[i+1]]
-        "*** YOUR CODE HERE ***"
+        
+        #our code
+        ghostdist = {}
+        for dist in livingGhostPositionDistributions:
+            best = None
+            for k, v in dist.iteritems():
+                if best == None:
+                    best = (k, v)
+                elif best[1] < v:
+                    best = (k, v)
+            best = best[0]
+            ghostdist[best] = self.distancer.getDistance(pacmanPosition, best)
+            
+        actions = {}
+        targetghost = None
+        for k,v in ghostdist.iteritems():
+            if targetghost == None:
+                targetghost = (k,v)
+            elif targetghost[1] > v:
+                targetghost = (k,v)
+        targetghost = targetghost[0]
+        for action in gameState.getLegalActions():
+            suc = Actions.getSuccessor(pacmanPosition, action)
+            actions[action] = self.distancer.getDistance(suc, targetghost)
+        
+        bestaction = None
+        for k,v in actions.iteritems():
+            if bestaction == None:
+                bestaction = (k,v)
+            elif bestaction[1] > v:
+                bestaction = (k,v)
+                
+        return bestaction[0]
