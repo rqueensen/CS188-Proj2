@@ -74,7 +74,15 @@ class DiscreteDistribution(dict):
         >>> empty
         {}
         """
-        "*** YOUR CODE HERE ***"
+        total = 0
+        for item in self.keys():
+            total += self[item]
+            
+        if total == 0:
+            return
+        
+        for item in self.keys():
+            self[item] = float(self[item]) / float(total)
 
     def sample(self):
         """
@@ -97,7 +105,19 @@ class DiscreteDistribution(dict):
         >>> round(samples.count('d') * 1.0/N, 1)
         0.0
         """
-        "*** YOUR CODE HERE ***"
+        
+        self.normalize()
+        result = random.random()
+        dist2 = sorted(self.items(), key=lambda x: x[1])
+        index = 0
+        sumd = 0
+        for entry in dist2:
+            sumd += entry[1]
+            if sumd > result:
+                return dist2[index][0]
+            index += 1
+        return dist2[-1][0]
+        
 
 
 class InferenceModule:
