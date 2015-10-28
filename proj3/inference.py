@@ -79,7 +79,11 @@ class DiscreteDistribution(dict):
             total += self[item]
             
         if total == 0:
-            return
+            ok = True
+            for i in self.values():
+                if i != 0:
+                    ok = False
+            if ok: return
         
         for item in self.keys():
             self[item] = float(self[item]) / float(total)
@@ -187,8 +191,8 @@ class InferenceModule:
         Return the probability P(noisyDistance | pacmanPosition, ghostPosition).
         """
         if ghostPosition == jailPosition:
-            return 1 if not noisyDistance else 0
-        if not noisyDistance: return 0
+            return 1 if noisyDistance == None else 0
+        if noisyDistance == None: return 0
         
         return busters.getObservationProbability(noisyDistance, manhattanDistance(pacmanPosition, ghostPosition))
         
@@ -298,7 +302,12 @@ class ExactInference(InferenceModule):
         current position. However, this is not a problem, as Pacman's current
         position is known.
         """
-        "*** YOUR CODE HERE ***"
+        dupe = self.beliefs.copy()
+        position = gameState.getPacmanPosition()
+        jail_pos = self.getJailPosition()
+        for ghost in self.allPositions:
+            self.beliefs[ghost] = self.getObservationProb(observation, position, ghost, jail_pos) * dupe[ghost]
+        self.beliefs.normalize()
 
     def predict(self, gameState):
         """
