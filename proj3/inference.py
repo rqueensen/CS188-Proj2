@@ -346,7 +346,7 @@ class ParticleFilter(InferenceModule):
         a particle could be located. Particles should be evenly (not randomly)
         distributed across positions in order to ensure a uniform prior.
         """
-        "*** YOUR CODE HERE ***"
+        self.particles = [self.legalPositions[i % len(self.legalPositions)] for i in range(self.numParticles)]
 
     def update(self, observation, gameState):
         """
@@ -370,7 +370,13 @@ class ParticleFilter(InferenceModule):
         locations conditioned on all evidence and time passage. This method
         essentially converts a list of particles into a belief distribution.
         """
-        "*** YOUR CODE HERE ***"
+        beliefs = DiscreteDistribution()
+        uniqueparticles = set(self.particles)
+        for particle in uniqueparticles:
+            beliefs[particle] = self.particles.count(particle)
+            
+        beliefs.normalize()
+        return beliefs
 
 
 class JointParticleFilter(ParticleFilter):
