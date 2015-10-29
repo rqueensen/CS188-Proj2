@@ -478,11 +478,15 @@ class JointParticleFilter(ParticleFilter):
         weights = DiscreteDistribution()
         
         for tuple in self.particles:
-            weights[tuple] = 1
+            weight = 1
             for i in range(self.numGhosts):
                 jail = self.getJailPosition(i)
-                weights[tuple] *= self.getObservationProb(observation[i], pac, tuple[i], jail)
-            
+                weight *= self.getObservationProb(observation[i], pac, tuple[i], jail)
+            if weights[weight] == None:
+                weights[tuple] = weight
+            else:
+                weights[tuple] += weight
+                
         weights.normalize()
             
         if weights.total() == 0:
