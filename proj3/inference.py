@@ -355,14 +355,53 @@ class ParticleFilter(InferenceModule):
         The observation is the estimated Manhattan distance to the ghost you are
         tracking.
         """
-        "*** YOUR CODE HERE ***"
+        jail = self.getJailPosition()
+        pac = gameState.getPacmanPosition()
+        new_weights = DiscreteDistribution()
+        beliefs =  self.getBeliefDistribution()
+        for particle in self.particles:
+            weight = self.getObservationProb(observation, pac, particle, jail) * beliefs[particle]
+            new_weights[particle] = weight
+        
+        new_weights.normalize()
+        
+        if new_weights.total() == 0:
+            self.initializeUniformly(gameState)
+            return
+            
+        new_particles = []
+        for particle in range(self.numParticles):
+            new_particles.append(new_weights.sample())
+            
+        self.particles = new_particles
+        
+            
 
     def predict(self, gameState):
         """
         Sample each particle's next state based on its current state and the
         gameState.
         """
-        "*** YOUR CODE HERE ***"
+        beliefs =  self.getBeliefDistribution()
+        seen_parts = []
+        posDist = {}
+        new_particles = []
+        
+        for particle in self.particles:
+            if particle in seen_parts:
+                new_particles.append(posDist[particle].sample())
+                
+            else:
+                seen_parts.append(particle)
+                newPosDist = self.getPositionDistribution(gameState, particle)
+                newPosDist.normalize()
+                posDist[particle] = newPosDist
+                new_particles.append(newPosDist.sample())
+                
+        self.particles = new_particles
+                
+            
+            
 
     def getBeliefDistribution(self):
         """
@@ -402,7 +441,13 @@ class JointParticleFilter(ParticleFilter):
         should be evenly distributed across positions in order to ensure a
         uniform prior.
         """
-        "*** YOUR CODE HERE ***"
+        new_particles = []
+        permutations = list(itertools.product(self.legalPositions, self.legalPositions))
+        while len(new_particles) < self.numParticles:
+            new_particles += permutations
+            
+        random.shuffle(new_particles)
+        self.particles = new_particles[:self.numParticles]
 
     def addGhostAgent(self, agent):
         """
@@ -429,7 +474,28 @@ class JointParticleFilter(ParticleFilter):
         The observation is the estimated Manhattan distances to all ghosts you
         are tracking.
         """
-        "*** YOUR CODE HERE ***"
+        pac = gameState.getPacmanPosition()
+        weights = DiscreteDistribution()
+        
+        for tuple in self.particles:
+            weights[tuple] = 1
+            for i in range(self.numGhosts):
+                jail = self.getJailPosition(i)
+                weights[tuple] *= self.getObservationProb(observation[i], pac, tuple[i], jail)
+            
+        weights.normalize()
+            
+        if weights.total() == 0:
+            self.initializeUniformly(gameState)
+            return
+            
+        new_particles = []
+        for particle in range(self.numParticles):
+            new_particles.append(weights.sample())
+            
+        self.particles = new_particles
+        
+            
 
     def predict(self, gameState):
         """
