@@ -110,8 +110,8 @@ class DiscreteDistribution(dict):
         0.0
         """
         
-        self.normalize()
-        result = random.random()
+        #self.normalize()
+        result = random.random()*self.total()
         dist2 = list(self.items())
         index = 0
         sumd = 0
