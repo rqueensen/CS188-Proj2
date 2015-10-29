@@ -112,7 +112,7 @@ class DiscreteDistribution(dict):
         
         self.normalize()
         result = random.random()
-        dist2 = sorted(self.items(), key=lambda x: x[1])
+        dist2 = list(self.items())
         index = 0
         sumd = 0
         for entry in dist2:
@@ -476,18 +476,24 @@ class JointParticleFilter(ParticleFilter):
         """
         pac = gameState.getPacmanPosition()
         weights = DiscreteDistribution()
+        seenGhosts = {}
         
         for tuple in self.particles:
             weight = 1
             for i in range(self.numGhosts):
+                if (i, tuple) in seenGhosts.keys():
+                    weight *= seenGhosts[(i, tuple)]
+                    continue
                 jail = self.getJailPosition(i)
-                weight *= self.getObservationProb(observation[i], pac, tuple[i], jail)
+                prob = self.getObservationProb(observation[i], pac, tuple[i], jail)
+                weight *= prob
+                seenGhosts[(i, tuple)] = prob
             if weights[weight] == None:
                 weights[tuple] = weight
             else:
                 weights[tuple] += weight
                 
-        weights.normalize()
+        #weights.normalize()
             
         if weights.total() == 0:
             self.initializeUniformly(gameState)
@@ -507,14 +513,20 @@ class JointParticleFilter(ParticleFilter):
         gameState.
         """
         newParticles = []
+        seenGhosts = {}
+        
         for oldParticle in self.particles:
             newParticle = list(oldParticle)  # A list of ghost positions
+            prevGhostPositions = list(oldParticle)
 
             # now loop through and update each entry in newParticle...
             for i in range(self.numGhosts):
-                newPosDist = self.getPositionDistribution(gameState, list(oldParticle), i, self.ghostAgents[i])
-                newPosDist.normalize()
+                if (i, oldParticle) in seenGhosts.keys():
+                    newParticle[i] = seenGhosts[(i, oldParticle)].sample()
+                    continue
+                newPosDist = self.getPositionDistribution(gameState, prevGhostPositions, i, self.ghostAgents[i])
                 newParticle[i] = newPosDist.sample()
+                seenGhosts[(i, oldParticle)] = newPosDist
 
             """*** END YOUR CODE HERE ***"""
             newParticles.append(tuple(newParticle))
