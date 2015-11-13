@@ -72,7 +72,6 @@ class PolicyIterationAgent(ValueEstimationAgent):
         
         #build arbitrary order to handle unordered state dict
         order = {key: value for (key, value) in zip(states, range(len(states)))}
-        print order
         
         for state in states:            
             if self.mdp.isTerminal(state):
