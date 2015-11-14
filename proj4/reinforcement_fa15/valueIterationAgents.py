@@ -115,7 +115,12 @@ class AsynchronousValueIterationAgent(ValueEstimationAgent):
                 
         return bestAction
         
-        
+    def bestQ(self, state):
+        values = []
+        for action in self.mdp.getPossibleActions(state):
+            q_value = self.computeQValueFromValues(state, action)
+            values.append(q_value)
+        return max(values)
         
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
@@ -147,62 +152,52 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
         self.iterations = iterations
         self.values = collections.defaultdict(float)
         states = self.mdp.getStates()
+        
+        predecessors = {}
         for state in states:
             self.values[state] = 0
+            predecessors[state] = []
 
-        predecessors = {}
+        
         
         for state in states:
-            for action in self.mdp.getPossibleActions(state):
-                statesAndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
-                for futureState, prob in statesAndProbs:
-                    predecessors.setdefault(futureState, [])
-                    if predecessors[futureState] != None and state not in predecessors[futureState]:
-                        predecessors[futureState].append(state)
-        
-        q = Queue.PriorityQueue()
+            if not self.mdp.isTerminal(state):
+                for action in self.mdp.getPossibleActions(state):
+                    statesAndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
+                    for futureState, prob in statesAndProbs:
+                        if prob != 0 and state not in predecessors[futureState]:
+                            predecessors[futureState].append(state)
+
+        Q = Queue.PriorityQueue()
         
         for s in states:
             if not self.mdp.isTerminal(s):
-                bestValue = -100000
-                for action in self.mdp.getPossibleActions(state):
-                    q_value = self.computeQValueFromValues(state, action)
-                    if q_value > bestValue:
-                        bestValue = q_value
-                diff = abs(self.values[s] - bestValue)
-                q.put((-diff, s))
-                
+                diff = abs(self.values[s] - self.bestQ(s))
+                Q.put((-diff, s))
                 
         for i in range(self.iterations):
-            if q.empty():
+            if Q.empty():
                 return
-            s = q.get()   
+            prior, s = Q.get()
+            
             if not self.mdp.isTerminal(s):
-                bestValue = -100000
-                for action in self.mdp.getPossibleActions(s):
-                    q_value = self.computeQValueFromValues(s, action)
-                    if q_value > bestValue:
-                        bestValue = q_value
-                self.values[s] = bestValue
+                self.values[s] = self.bestQ(s)
                 
             for p in predecessors[s]:
-                bestValue = -100000
-                for action in self.mdp.getPossibleActions(p):
-                    q_value = self.computeQValueFromValues(p, action)
-                    if q_value > bestValue:
-                        bestValue = q_value
-                diff = abs(self.values[p] - bestValue)
+                diff = abs(self.values[p] - self.bestQ(p))
                 
-                shouldPush = False
+                update = False
                 if diff > theta:
-                    shouldPush = True
-                    for i in range(len(q)):
-                        (temp1, temp2) = q[i]
-                        if temp2 == p and temp1 <= -diff:
-                            shouldPush = False
-                            
-                if shouldPush:
-                    q.put((-diff, p))
+                    update = True
+                    for x in predecessors:
+                        if p == x[1]:
+                            if x[0] <= -diff:
+                                update = False
+                                break
+                if update:
+                    Q.put((-diff, p))
+                    
+                
                         
                             
                 
