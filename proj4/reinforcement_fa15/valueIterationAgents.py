@@ -60,8 +60,9 @@ class AsynchronousValueIterationAgent(ValueEstimationAgent):
             if self.counter == len(states):
                 self.counter = 0
             return state
-        
+        start = time.time()
         for i in range(iterations):
+            
             state = getState(states)
             
             if mdp.isTerminal(state):
@@ -74,6 +75,7 @@ class AsynchronousValueIterationAgent(ValueEstimationAgent):
                     bestValue = q_value
             
             self.values[state] = bestValue
+        print start - time.time()
 
     def getValue(self, state):
         """
@@ -174,8 +176,9 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
             if not self.mdp.isTerminal(s):
                 diff = abs(self.values[s] - self.bestQ(s))
                 Q.put((-diff, s))
-                
+        start = time.time()        
         for i in range(self.iterations):
+            
             if Q.empty():
                 return
             prior, s = Q.get()
@@ -196,7 +199,7 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
                                 break
                 if update:
                     Q.put((-diff, p))
-                    
+        print time.time() - start
                 
                         
                             
