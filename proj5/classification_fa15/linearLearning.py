@@ -38,7 +38,7 @@ def quadLoss(x, y):
     with quadratic loss functions)    
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return (x - y) ** 2
 
 def der_quadLoss_dx(x, y):
     """
@@ -51,7 +51,7 @@ def der_quadLoss_dx(x, y):
     with quadratic loss functions)
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return 2(x - y)
 
 def der_dot_dw(x, weights):
     """
@@ -64,7 +64,7 @@ def der_dot_dw(x, weights):
     Hint: You may not need all of the input arguments.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
 
 def stochasticGradientDescentUpdate(datum, label, weights, alpha, der_loss_dw):
     """
@@ -226,8 +226,7 @@ class LinearRegression:
         """
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
+        
         self.weights = weights
 
     def trainGradient(self, trainingData, regressionData, numIterations, showPlot=True, showPacmanPlot=True):
@@ -290,7 +289,7 @@ class LinearRegression:
         x is an array of the same length as self.weights (both include the bias term)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return np.dot(x, self.weights)
         
     def regressionLoss(self, x_data, y_data):
         """
@@ -310,7 +309,7 @@ class LinearRegression:
         Returns a single float value for the loss
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.quadLoss(x, y_true)
         
     def der_loss_dw(self, x, y_true, weights):
         """
