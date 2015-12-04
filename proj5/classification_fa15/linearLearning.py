@@ -227,7 +227,7 @@ class LinearRegression:
 
         "*** YOUR CODE HERE ***"
         
-        self.weights = weights
+        self.weights = np.linalg.inv(trainingData_x.T.dot(trainingData_x)).dot(trainingData_x.T).dot(trainingData_y)
 
     def trainGradient(self, trainingData, regressionData, numIterations, showPlot=True, showPacmanPlot=True):
         print 'Training with gradient ...'
@@ -309,7 +309,7 @@ class LinearRegression:
         Returns a single float value for the loss
         """
         "*** YOUR CODE HERE ***"
-        return self.quadLoss(x, y_true)
+        return quadLoss(self.hypothesis(x), y_true)
         
     def der_loss_dw(self, x, y_true, weights):
         """
