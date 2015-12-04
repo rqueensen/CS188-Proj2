@@ -101,7 +101,7 @@ def sigmoid(x):
     products with weights involved.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return 1 / (math.e ** (-x) + 1)
 
 def der_sigmoid_dx(x):
     """
@@ -116,7 +116,7 @@ def der_sigmoid_dx(x):
     advantage of the sigmoid function you already implemented.  
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return sigmoid(x) * (1 - sigmoid(x)) # good hint :)
 
 def softmax(x):
     """
@@ -420,7 +420,7 @@ class BinaryLinearClassifier:
         has already been included in both x and self.weights.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return sigmoid(self.weights.dot(x))
 
     def classificationLoss(self, x_data, y_data):
         """
@@ -440,7 +440,7 @@ class BinaryLinearClassifier:
         Returns a single float value for the loss
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return quadLoss(self.hypothesis(x), y_true)
 
     def der_loss_dw(self, x, y_true, weights):
         """
@@ -460,7 +460,10 @@ class BinaryLinearClassifier:
         what value would you need to pass as input to that function?
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        first = der_quadLoss_dx(sigmoid(weights.dot(x)), y_true)
+        second = der_dot_dw(x, weights)
+        third = der_sigmoid_dx(weights.dot(x))
+        return first * second * third
 
 class MulticlassLinearClassifier:
     """
