@@ -75,14 +75,61 @@ def enhancedFeatureExtractorDigit(datum):
     for this datum (datum is of type samples.Datum).
 
     ## DESCRIBE YOUR ENHANCED FEATURES HERE...
-
+        Counted the Number of blank Regions
+        Negligible Features:
+            Including a value for grey pixels
+            Solid Pixels/Total Area
     ##
     """
     features =  basicFeatureExtractorDigit(datum)
 
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-
+    def isSolid(x, y):
+        return datum.getPixel(x, y) > 0
+         
+    def dfs(x, y):
+        visited = set()
+        queue = set()
+        queue.add((x, y))
+        while len(queue) != 0:
+            node = queue.pop()
+            if node not in visited:
+                visited.add(node)
+                if not isSolid(node[0], node[1]):
+                    i, j = node
+                    neighbors = set()
+                    for pair in [(i+1, j), (i-1, j), (i, j+1), (i, j-1), (i+1, j+1), (i-1, j+1), (i+1, j-1), (i-1, j-1)]:
+                        if pair[0] < DIGIT_DATUM_WIDTH and pair[0] >=0 and pair[1] < DIGIT_DATUM_HEIGHT and pair[1] >= 0:
+                            neighbors.add(pair)
+                     
+                    queue = queue.union(neighbors)
+        return visited
+        
+    num_regions = np.zeros(3, int)
+    seen = set()
+    region_count = 0
+    for x in xrange(DIGIT_DATUM_WIDTH):
+        for y in xrange(DIGIT_DATUM_HEIGHT):
+            if not (x, y) in seen:
+                if not isSolid(x, y):
+                    region_count += 1
+                    seen = seen.union(dfs(x, y))
+                
+    if region_count == 1:
+        num_regions[0] = 1
+        num_regions[1] = 0
+        num_regions[2] = 0
+    elif region_count == 2:
+        num_regions[0] = 0
+        num_regions[1] = 1
+        num_regions[2] = 0
+    else:
+        num_regions[0] = 0
+        num_regions[1] = 0
+        num_regions[2] = 1
+    
+    features = np.append(features, num_regions)
+    
+    #print(datum.getAsciiString())
     return features
 
 

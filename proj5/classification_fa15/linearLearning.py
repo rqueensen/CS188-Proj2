@@ -37,7 +37,6 @@ def quadLoss(x, y):
     Note: Do NOT add a factor of 1/2 in front of this loss (as often seen 
     with quadratic loss functions)    
     """
-    "*** YOUR CODE HERE ***"
     return (x - y) ** 2
 
 def der_quadLoss_dx(x, y):
@@ -50,7 +49,6 @@ def der_quadLoss_dx(x, y):
     Note: The quad loss function does NOT add a factor of 1/2 in front of that loss (as often seen 
     with quadratic loss functions)
     """
-    "*** YOUR CODE HERE ***"
     return 2 * (x - y)
 
 def der_dot_dw(x, weights):
@@ -63,7 +61,6 @@ def der_dot_dw(x, weights):
     
     Hint: You may not need all of the input arguments.
     """
-    "*** YOUR CODE HERE ***"
     return x
 
 def stochasticGradientDescentUpdate(datum, label, weights, alpha, der_loss_dw):
@@ -86,7 +83,6 @@ def stochasticGradientDescentUpdate(datum, label, weights, alpha, der_loss_dw):
     of the derivative of the loss function with respect to each self.weights term
     [der_loss_dw1, der_loss_dw2, ...]
     """
-    "*** YOUR CODE HERE ***"    
     return weights - alpha * der_loss_dw(datum, label, weights)
 
 def sigmoid(x):
@@ -100,7 +96,6 @@ def sigmoid(x):
     Note that this is just the sigmoid function and there are no dot
     products with weights involved.
     """
-    "*** YOUR CODE HERE ***"
     return 1 / (math.e ** (-x) + 1)
 
 def der_sigmoid_dx(x):
@@ -115,7 +110,6 @@ def der_sigmoid_dx(x):
     Hint: Find (look-up) a form of the derivative that can take
     advantage of the sigmoid function you already implemented.  
     """
-    "*** YOUR CODE HERE ***"
     return sigmoid(x) * (1 - sigmoid(x)) # good hint :)
 
 def softmax(x):
@@ -135,8 +129,10 @@ def softmax(x):
     Note that this is just the sigmoid function and there are no dot
     products with weights involved.
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    exp_array = np.exp(x)
+    sum = np.sum(exp_array)
+    
+    return exp_array/sum
 
 def der_softmax_dx(x, i, j):
     """
@@ -286,7 +282,7 @@ class LinearRegression:
         
         x is an array of the same length as self.weights (both include the bias term)
         """
-        "*** YOUR CODE HERE ***"
+        
         return np.dot(x, self.weights)
         
     def regressionLoss(self, x_data, y_data):
@@ -546,8 +542,11 @@ class MulticlassLinearClassifier:
         """
         numClasses = len(self.legalLabels)
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        weights = self.weights
+        dot_product = []
+        for w in weights:
+            dot_product.append(np.dot(x, w))
+        return softmax(dot_product)
 
     def classificationLoss(self, x_data, y_data):
         """
